@@ -1,22 +1,22 @@
 {
-  "name": "setup-unigo",
-  "description": "GitHub Action to setup UniGo (Uni Runtime and Tools Manager)",
+  "name": "setup-unistack",
+  "description": "GitHub Action to setup UniStack (Uni Runtime and Tools Manager)",
   "version": "0.1.0",
   "author": "Snowdream Tech",
   "private": true,
-  "homepage": "https://github.com/snowdreamtech/setup-unigo",
+  "homepage": "https://github.com/snowdreamtech/setup-unistack",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/snowdreamtech/setup-unigo.git"
+    "url": "git+https://github.com/snowdreamtech/setup-unistack.git"
   },
   "bugs": {
-    "url": "https://github.com/snowdreamtech/setup-unigo/issues"
+    "url": "https://github.com/snowdreamtech/setup-unistack/issues"
   },
   "keywords": [
     "actions",
     "node",
     "setup",
-    "unigo"
+    "unistack"
   ],
   "exports": {
     ".": "./dist/index.cjs"

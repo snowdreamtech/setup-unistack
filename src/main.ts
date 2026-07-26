@@ -10,29 +10,29 @@ import * as Handlebars from 'handlebars'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const UNIGO_CONFIG_FILE_PATTERNS = [
-  '**/.unigo.toml',
-  '**/unigo.toml',
-  '**/unigo.lock',
-  '**/.unigo.lock',
+const UNISTACK_CONFIG_FILE_PATTERNS = [
+  '**/.unistack.toml',
+  '**/unistack.toml',
+  '**/unistack.lock',
+  '**/.unistack.lock',
   '**/.tool-versions'
 ]
 
 const DEFAULT_CACHE_KEY_TEMPLATE =
   '{{cache_key_prefix}}-{{platform}}' +
   '{{#if version}}-{{version}}{{/if}}' +
-  '{{#if unigo_env}}-{{unigo_env}}{{/if}}' +
+  '{{#if unistack_env}}-{{unistack_env}}{{/if}}' +
   '-{{#if file_hash}}{{file_hash}}{{else}}no-config{{/if}}'
 
 const GITHUB_RELEASES_API =
-  'https://api.github.com/repos/snowdreamtech/UniGo/releases'
+  'https://api.github.com/repos/snowdreamtech/UniStack/releases'
 
 const GITHUB_RELEASE_DOWNLOAD_BASE =
-  'https://github.com/snowdreamtech/UniGo/releases/download'
+  'https://github.com/snowdreamtech/UniStack/releases/download'
 
-const NPM_PACKAGE = '@snowdreamtech/unigo'
+const NPM_PACKAGE = '@snowdreamtech/unistack'
 
-const GO_MODULE = 'github.com/snowdreamtech/unigo'
+const GO_MODULE = 'github.com/snowdreamtech/unistack'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ type InstallMethod = 'npm' | 'pip' | 'release' | 'go'
 export async function run(): Promise<void> {
   try {
     const requestedVersion = core
-      .getInput('unigo-version')
+      .getInput('unistack-version')
       .trim()
       .replace(/^[vV]/, '')
     const requestedMethod = core.getInput('install_method').trim() as
@@ -80,24 +80,24 @@ export async function run(): Promise<void> {
       cacheVersion = installVersion
     }
 
-    core.info(`Target unigo version: ${installVersion}`)
+    core.info(`Target unistack version: ${installVersion}`)
 
     // 3. Restore cache
     let cacheKey: string | undefined
     let cacheHit = false
     if (core.getBooleanInput('cache')) {
-      const result = await restoreUnigoCache(cacheVersion)
+      const result = await restoreUnistackCache(cacheVersion)
       cacheKey = result.primaryKey
       cacheHit = result.hit
     } else {
       core.setOutput('cache-hit', false)
     }
 
-    // Always install unigo to ensure the binary is correctly placed and PATH is set
-    const installed = await installUnigo(method, installVersion)
+    // Always install unistack to ensure the binary is correctly placed and PATH is set
+    const installed = await installUnistack(method, installVersion)
     if (!installed) {
       core.setFailed(
-        `Failed to install unigo@${installVersion} via method "${method}"`
+        `Failed to install unistack@${installVersion} via method "${method}"`
       )
       return
     }
@@ -107,9 +107,9 @@ export async function run(): Promise<void> {
     }
 
     // Verify installation
-    const installedVersion = await verifyUnigo()
-    core.setOutput('unigo-version', installedVersion)
-    core.info(`unigo ${installedVersion} is ready`)
+    const installedVersion = await verifyUnistack()
+    core.setOutput('unistack-version', installedVersion)
+    core.info(`unistack ${installedVersion} is ready`)
 
     // Save cache (only on cache miss; post-action handles the actual save)
     if (cacheKey && core.getBooleanInput('cache_save')) {
@@ -120,13 +120,13 @@ export async function run(): Promise<void> {
 
     // Write Job Summary
     await core.summary
-      .addHeading('UniGo Setup Summary', 2)
+      .addHeading('UniStack Setup Summary', 2)
       .addTable([
         [
           { data: 'Item', header: true },
           { data: 'Details', header: true }
         ],
-        ['**UniGo Version**', `v${installedVersion}`],
+        ['**UniStack Version**', `v${installedVersion}`],
         ['**Install Method**', `\`${method}\``],
         ['**Cache Hit**', cacheHit ? '✅ Yes' : '❌ No']
       ])
@@ -140,12 +140,12 @@ export async function run(): Promise<void> {
 // ─── Version Resolution ───────────────────────────────────────────────────────
 
 /**
- * Fetch the target unigo version from GitHub API.
+ * Fetch the target unistack version from GitHub API.
  * @param absoluteLatest If true, fetches the absolute latest release. If false, fetches the second latest.
  */
 async function fetchLatestVersion(absoluteLatest: boolean): Promise<string> {
   const targetDesc = absoluteLatest ? 'latest' : 'second latest'
-  core.startGroup(`Fetching target unigo version (${targetDesc})`)
+  core.startGroup(`Fetching target unistack version (${targetDesc})`)
   try {
     const token = core.getInput('github_token')
     const args = ['-fsSL', GITHUB_RELEASES_API]
@@ -237,7 +237,7 @@ function methodUsesRegistryLatest(method: InstallMethod): boolean {
   return method === 'npm' || method === 'pip'
 }
 
-async function installUnigo(
+async function installUnistack(
   method: InstallMethod,
   version: string
 ): Promise<boolean> {
@@ -256,11 +256,11 @@ async function installUnigo(
 // ─── npm Installation ─────────────────────────────────────────────────────────
 
 /**
- * Install unigo via npm global install.
+ * Install unistack via npm global install.
  * Requires npm to be available in PATH.
  */
 async function installViaNpm(version: string): Promise<boolean> {
-  core.startGroup(`Installing unigo@${version} via npm`)
+  core.startGroup(`Installing unistack@${version} via npm`)
   try {
     const pkg = version ? `${NPM_PACKAGE}@${version}` : NPM_PACKAGE
     const code = await exec.exec('npm', ['install', '-g', pkg])
@@ -289,12 +289,12 @@ async function installViaNpm(version: string): Promise<boolean> {
 // ─── pip Installation ─────────────────────────────────────────────────────────
 
 /**
- * Install unigo via pip.
+ * Install unistack via pip.
  * NOTE: PyPI package is not yet available; this is a reserved implementation.
  * Falls back to GitHub Release download with a warning.
  */
 async function installViaPip(version: string): Promise<boolean> {
-  core.startGroup(`Installing unigo@${version} via pip`)
+  core.startGroup(`Installing unistack@${version} via pip`)
   try {
     const pipCmd =
       (await io.which('pip3', false)) || (await io.which('pip', false))
@@ -305,9 +305,9 @@ async function installViaPip(version: string): Promise<boolean> {
 
     const args = ['install']
     if (version !== 'latest') {
-      args.push(`snowdreamtech-unigo==${version}`)
+      args.push(`snowdreamtech-unistack==${version}`)
     } else {
-      args.push('snowdreamtech-unigo')
+      args.push('snowdreamtech-unistack')
     }
 
     const res = await exec.getExecOutput(pipCmd, args, {
@@ -320,7 +320,7 @@ async function installViaPip(version: string): Promise<boolean> {
       return false
     }
 
-    core.info('✅ Successfully installed unigo via pip')
+    core.info('✅ Successfully installed unistack via pip')
     return true
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)
@@ -334,15 +334,15 @@ async function installViaPip(version: string): Promise<boolean> {
 // ─── GitHub Release Installation ─────────────────────────────────────────────
 
 /**
- * Download and install unigo binary from GitHub Releases.
+ * Download and install unistack binary from GitHub Releases.
  * Supports github_proxy prefix and automatic retry.
  */
 async function installViaRelease(version: string): Promise<boolean> {
-  core.startGroup(`Installing unigo@${version} via GitHub Release`)
+  core.startGroup(`Installing unistack@${version} via GitHub Release`)
   try {
     const targetStr = getTarget()
     const ext = process.platform === 'win32' ? '.zip' : '.tar.gz'
-    const assetName = `unigo_${targetStr}${ext}`
+    const assetName = `unistack_${targetStr}${ext}`
     const githubProxy =
       core.getInput('github_proxy').trim() ||
       process.env.GITHUB_PROXY?.trim() ||
@@ -350,7 +350,7 @@ async function installViaRelease(version: string): Promise<boolean> {
 
     const rawUrl =
       version === 'latest'
-        ? `https://github.com/snowdreamtech/UniGo/releases/latest/download/${assetName}`
+        ? `https://github.com/snowdreamtech/UniStack/releases/latest/download/${assetName}`
         : `${GITHUB_RELEASE_DOWNLOAD_BASE}/v${version}/${assetName}`
     const downloadUrl = githubProxy
       ? `${githubProxy.replace(/\/$/, '')}/${rawUrl}`
@@ -363,7 +363,7 @@ async function installViaRelease(version: string): Promise<boolean> {
     await fs.promises.mkdir(binDir, { recursive: true })
 
     const archivePath = path.join(os.tmpdir(), assetName)
-    const extractDir = path.join(os.tmpdir(), `unigo-extract-${Date.now()}`)
+    const extractDir = path.join(os.tmpdir(), `unistack-extract-${Date.now()}`)
 
     // Download with retry
     await downloadWithRetry(downloadUrl, archivePath)
@@ -377,7 +377,8 @@ async function installViaRelease(version: string): Promise<boolean> {
     }
 
     // Find and move binary
-    const binaryName = process.platform === 'win32' ? 'unigo.exe' : 'unigo'
+    const binaryName =
+      process.platform === 'win32' ? 'unistack.exe' : 'unistack'
     const binaryPath = await findFile(extractDir, binaryName)
     if (!binaryPath) {
       throw new Error(`Binary "${binaryName}" not found in extracted archive`)
@@ -389,7 +390,7 @@ async function installViaRelease(version: string): Promise<boolean> {
     }
 
     core.addPath(binDir)
-    core.info(`unigo installed to ${destPath}`)
+    core.info(`unistack installed to ${destPath}`)
 
     // Cleanup temp files
     await fs.promises.rm(archivePath, { force: true })
@@ -459,11 +460,11 @@ async function findFile(
 // ─── go Installation ──────────────────────────────────────────────────────────
 
 /**
- * Install unigo via `go install`.
+ * Install unistack via `go install`.
  * Requires go to be available in PATH.
  */
 async function installViaGo(version: string): Promise<boolean> {
-  core.startGroup(`Installing unigo@${version} via go install`)
+  core.startGroup(`Installing unistack@${version} via go install`)
   try {
     const pkg =
       version && version !== 'latest'
@@ -490,12 +491,12 @@ async function installViaGo(version: string): Promise<boolean> {
 // ─── Verification ─────────────────────────────────────────────────────────────
 
 /**
- * Verify unigo is accessible and return its version string.
+ * Verify unistack is accessible and return its version string.
  */
-async function verifyUnigo(): Promise<string> {
-  core.startGroup('Verifying unigo installation')
+async function verifyUnistack(): Promise<string> {
+  core.startGroup('Verifying unistack installation')
   try {
-    const result = await exec.getExecOutput('unigo', ['version'], {
+    const result = await exec.getExecOutput('unistack', ['version'], {
       silent: false,
       ignoreReturnCode: true
     })
@@ -510,9 +511,9 @@ async function verifyUnigo(): Promise<string> {
 
 /**
  * Return platform-specific paths that should be cached.
- * UniGo uses XDG Base Directory convention:
- *   Linux & macOS: ~/.local/share/unigo
- *   Windows:       %LOCALAPPDATA%\unigo
+ * UniStack uses XDG Base Directory convention:
+ *   Linux & macOS: ~/.local/share/unistack
+ *   Windows:       %LOCALAPPDATA%\unistack
  */
 function getCachePaths(): string[] {
   const home = os.homedir()
@@ -520,21 +521,21 @@ function getCachePaths(): string[] {
     return [
       path.join(
         process.env.LOCALAPPDATA ?? path.join(home, 'AppData', 'Local'),
-        'unigo'
+        'unistack'
       )
     ]
   }
-  return [path.join(home, '.local', 'share', 'unigo')]
+  return [path.join(home, '.local', 'share', 'unistack')]
 }
 
 /**
- * Restore the unigo installation from cache.
+ * Restore the unistack installation from cache.
  * Supports primary key + OS-prefixed restore-keys for better hit rates.
  */
-async function restoreUnigoCache(
+async function restoreUnistackCache(
   version: string
 ): Promise<{ primaryKey: string; hit: boolean }> {
-  core.startGroup('Restoring unigo cache')
+  core.startGroup('Restoring unistack cache')
 
   const cacheKeyTemplate =
     core.getInput('cache_key') || DEFAULT_CACHE_KEY_TEMPLATE
@@ -543,8 +544,8 @@ async function restoreUnigoCache(
   // Fallback restore-keys (OS-scoped, progressively broader)
   const runnerOs = process.env.RUNNER_OS ?? process.platform
   const restoreKeys = [
-    `${core.getInput('cache_key_prefix') || 'setup-unigo-v1'}-${runnerOs.toLowerCase()}-unigo-`,
-    `${core.getInput('cache_key_prefix') || 'setup-unigo-v1'}-${runnerOs.toLowerCase()}-`
+    `${core.getInput('cache_key_prefix') || 'setup-unistack-v1'}-${runnerOs.toLowerCase()}-unistack-`,
+    `${core.getInput('cache_key_prefix') || 'setup-unistack-v1'}-${runnerOs.toLowerCase()}-`
   ]
 
   const cachePaths = getCachePaths()
@@ -567,11 +568,11 @@ async function restoreUnigoCache(
 }
 
 /**
- * Save the unigo installation to cache.
+ * Save the unistack installation to cache.
  * Called from post-action (src/post.ts) after the job completes.
  */
-async function saveUnigoCache(cacheKey: string): Promise<void> {
-  core.startGroup('Saving unigo cache')
+async function saveUnistackCache(cacheKey: string): Promise<void> {
+  core.startGroup('Saving unistack cache')
   const cachePaths = getCachePaths()
 
   // Filter to paths that actually exist (non-existent paths cause cache errors)
@@ -593,7 +594,7 @@ async function saveUnigoCache(cacheKey: string): Promise<void> {
 }
 
 // Export for use by post.ts
-export { saveUnigoCache, getCachePaths }
+export { saveUnistackCache, getCachePaths }
 
 // ─── Cache Key Template ───────────────────────────────────────────────────────
 
@@ -601,19 +602,22 @@ async function processCacheKeyTemplate(
   template: string,
   version: string
 ): Promise<string> {
-  const cacheKeyPrefix = core.getInput('cache_key_prefix') || 'setup-unigo-v1'
-  const unigoEnv = process.env.UNIGO_ENV?.replace(/,/g, '-') ?? ''
+  const cacheKeyPrefix =
+    core.getInput('cache_key_prefix') || 'setup-unistack-v1'
+  const unistackEnv = process.env.UNISTACK_ENV?.replace(/,/g, '-') ?? ''
   const platform = `${getPlatformArch()}-${getRunnerImageId()}`
 
-  // Hash unigo config files
-  const fileHash = await glob.hashFiles(UNIGO_CONFIG_FILE_PATTERNS.join('\n'))
+  // Hash unistack config files
+  const fileHash = await glob.hashFiles(
+    UNISTACK_CONFIG_FILE_PATTERNS.join('\n')
+  )
 
   const baseData = {
     version,
     cache_key_prefix: cacheKeyPrefix,
     platform,
     file_hash: fileHash,
-    unigo_env: unigoEnv
+    unistack_env: unistackEnv
   }
 
   // Compute default key first
@@ -693,7 +697,7 @@ function getRunnerImageId(): string {
 // ─── Install Dirs ─────────────────────────────────────────────────────────────
 
 /**
- * Return the directory where the unigo binary should be placed.
+ * Return the directory where the unistack binary should be placed.
  * This is always ~/.local/bin (cross-platform).
  */
 function getInstallBinDir(): string {

@@ -1,5 +1,5 @@
 /**
- * Post-action: save the unigo cache after the main job completes.
+ * Post-action: save the unistack cache after the main job completes.
  * Reads PRIMARY_KEY and CACHE_PATHS state saved by main action.
  */
 import * as core from '@actions/core'
@@ -46,7 +46,7 @@ export async function post(): Promise<void> {
       return
     }
 
-    core.startGroup('Saving unigo cache (post-action)')
+    core.startGroup('Saving unistack cache (post-action)')
     core.info(`Paths to cache:\n  ${existingPaths.join('\n  ')}`)
     core.info(`Cache key: ${primaryKey}`)
 

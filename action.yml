@@ -1,16 +1,16 @@
-name: 'Setup UniGo'
-description: 'GitHub Action to install and setup UniGo (Universal Runtime Manager) with auto-detection.'
+name: 'Setup UniStack'
+description: 'GitHub Action to install and setup UniStack (Universal Runtime Manager) with auto-detection.'
 author: 'Snowdream Tech'
 branding:
   icon: 'download'
   color: 'blue'
 
 inputs:
-  unigo-version:
+  unistack-version:
     required: false
     default: ''
     description: >-
-      The version of unigo to install (e.g. "0.0.1"). If empty, installs
+      The version of unistack to install (e.g. "0.0.1"). If empty, installs
       the latest release.
 
   github_token:
@@ -34,16 +34,16 @@ inputs:
     description: >-
       Installation method. One of: auto, npm, pip, release, go.
       - auto: Smart detection based on available runtimes (npm → pip → release → go)
-      - npm:  Install via `npm install -g @snowdreamtech/unigo`
-      - pip:  Install via `pip install snowdreamtech-unigo`
+      - npm:  Install via `npm install -g @snowdreamtech/unistack`
+      - pip:  Install via `pip install snowdreamtech-unistack`
       - release: Download binary from GitHub Releases
-      - go:   Install via `go install github.com/snowdreamtech/unigo@...`
+      - go:   Install via `go install github.com/snowdreamtech/unistack@...`
 
   cache:
     required: false
     default: 'true'
     description: >-
-      If true, cache the unigo installation directory to speed up subsequent runs.
+      If true, cache the unistack installation directory to speed up subsequent runs.
 
   cache_save:
     required: false
@@ -53,7 +53,7 @@ inputs:
 
   cache_key_prefix:
     required: false
-    default: 'setup-unigo-v1'
+    default: 'setup-unistack-v1'
     description: >-
       Prefix for the cache key. Change this value to invalidate the cache.
 
@@ -62,11 +62,11 @@ inputs:
     default: ''
     description: |
       Override the complete cache key. Supports Handlebars template variables:
-        {{version}}           - The unigo version
+        {{version}}           - The unistack version
         {{cache_key_prefix}}  - The cache key prefix
         {{platform}}          - Platform string (e.g. "linux-x64-ubuntu24")
-        {{file_hash}}         - Hash of unigo config files (.unigo.toml, unigo.lock)
-        {{unigo_env}}        - Value of UNIGO_ENV environment variable
+        {{file_hash}}         - Hash of unistack config files (.unistack.toml, unistack.lock)
+        {{unistack_env}}        - Value of UNISTACK_ENV environment variable
 
         {{default}}           - The processed default cache key (for extension)
 
@@ -74,8 +74,8 @@ outputs:
   cache-hit:
     description: 'Whether the cache was restored (true/false).'
 
-  unigo-version:
-    description: 'The version of unigo that was installed.'
+  unistack-version:
+    description: 'The version of unistack that was installed.'
 
   install-method:
     description: 'The installation method that was used (npm/pip/release/go).'

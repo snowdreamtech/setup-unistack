@@ -76,7 +76,7 @@ jobs:
           node-version: '20'
 
       - name: Test Local Action
-        id: setup-unigo
+        id: setup-unistack
         uses: ./
         with:
           install_method: ${{ matrix.method }}
@@ -87,13 +87,13 @@ jobs:
         id: print-outputs
         shell: bash
         run: |
-          echo "cache-hit     = ${{ steps.setup-unigo.outputs.cache-hit }}"
-          echo "unigo-version = ${{ steps.setup-unigo.outputs.unigo-version }}"
-          echo "install-method = ${{ steps.setup-unigo.outputs.install-method }}"
+          echo "cache-hit     = ${{ steps.setup-unistack.outputs.cache-hit }}"
+          echo "unistack-version = ${{ steps.setup-unistack.outputs.unistack-version }}"
+          echo "install-method = ${{ steps.setup-unistack.outputs.install-method }}"
 
-      - name: Verify unigo in PATH
+      - name: Verify unistack in PATH
         shell: bash
-        run: unigo version
+        run: unistack version
 
   # ── go install method test ──────────────────────────────────────────────────
   test-action-go:
@@ -117,15 +117,15 @@ jobs:
           cache: false
 
       - name: Test Local Action (go method)
-        id: setup-unigo
+        id: setup-unistack
         uses: ./
         with:
           install_method: go
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify unigo in PATH
+      - name: Verify unistack in PATH
         shell: bash
-        run: unigo version
+        run: unistack version
 
   # ── pip install method test ──────────────────────────────────────────────────
   test-action-pip:
@@ -148,15 +148,15 @@ jobs:
           python-version: '3.12'
 
       - name: Test Local Action (pip method)
-        id: setup-unigo
+        id: setup-unistack
         uses: ./
         with:
           install_method: pip
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify unigo in PATH
+      - name: Verify unistack in PATH
         shell: bash
-        run: unigo version
+        run: unistack version
   #
   # ── Release Orchestration ───────────────────────────────────────────────────
   release-please:
