@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/snowdreamtech/setup-unistack/compare/v0.1.0...v0.2.0) (2026-08-05)
+
+
+### Features
+
+* inject shims into GITHUB_PATH dynamically ([78a7860](https://github.com/snowdreamtech/setup-unistack/commit/78a7860e0d1f7496972669217f23313bea4d281f))
+
+
+### Bug Fixes
+
+* remove fallback restore-keys for stricter cache matching ([a29f2a0](https://github.com/snowdreamtech/setup-unistack/commit/a29f2a0886051a81cf813b96f8228dffec24c691))
+
 ## 0.1.0 (2026-07-26)
 
 

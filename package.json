@@ -1,7 +1,7 @@
 {
   "name": "setup-unistack",
   "description": "GitHub Action to setup UniStack (Uni Runtime and Tools Manager)",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Snowdream Tech",
   "private": true,
   "homepage": "https://github.com/snowdreamtech/setup-unistack",
