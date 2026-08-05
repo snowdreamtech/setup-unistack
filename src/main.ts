@@ -546,19 +546,11 @@ async function restoreUnistackCache(
     core.getInput('cache_key') || DEFAULT_CACHE_KEY_TEMPLATE
   const primaryKey = await processCacheKeyTemplate(cacheKeyTemplate, version)
 
-  // Fallback restore-keys (OS-scoped, progressively broader)
-  const runnerOs = process.env.RUNNER_OS ?? process.platform
-  const restoreKeys = [
-    `${core.getInput('cache_key_prefix') || 'setup-unistack-v1'}-${runnerOs.toLowerCase()}-unistack-`,
-    `${core.getInput('cache_key_prefix') || 'setup-unistack-v1'}-${runnerOs.toLowerCase()}-`
-  ]
-
   const cachePaths = getCachePaths()
   core.info(`Cache paths:\n  ${cachePaths.join('\n  ')}`)
   core.info(`Primary key: ${primaryKey}`)
-  core.info(`Restore keys:\n  ${restoreKeys.join('\n  ')}`)
 
-  const hitKey = await cache.restoreCache(cachePaths, primaryKey, restoreKeys)
+  const hitKey = await cache.restoreCache(cachePaths, primaryKey, [])
   const isExactHit = hitKey === primaryKey
 
   core.setOutput('cache-hit', isExactHit)
